@@ -90,25 +90,34 @@ class PartitionCreator:
     @staticmethod
     def _convert_to_dict(data):
         """
-        Converts a list containing tuples ("key_name", "key_value") to a dictionary
+        Converts dictionary of {"name": "value"} entries into a CBOR-encodable output dictionary.
 
-        If "key_value" of data entry is a string-type variable and contains a HEX_PREFIX algorithm decodes it
-        to hex format to be sure that a cbor file will contain proper bytes.
+        If "value" of data entry is a string-type variable and contains a HEX_PREFIX algorithm
+        decodes it to hex format to be sure that a cbor file will contain proper bytes.
 
-        If "key_value" of data entry is a dictionary, algorithm appends it to the created dictionary.
+        If "value" of data entry is a dictionary, algorithm appends it to the created dictionary
+        while decoding string-type fields with HEX_PREFIX to hex format / bytes.
         """
+        def is_hex(value) -> bool:
+            return isinstance(value, str) and value.startswith(HEX_PREFIX)
+
+        def hex_to_bytes(value) -> bytes:
+            return codecs.decode(value[len(HEX_PREFIX):], "hex")
+
         output_dict = {}
         for name, value in data.items():
             if not isinstance(value, dict):
                 log.debug("Processing entry '%s'", name)
-                if isinstance(value, str) and value.startswith(HEX_PREFIX):
-                    output_dict[name] = codecs.decode(value[len(HEX_PREFIX):], "hex")
+                if is_hex(value):
+                    output_dict[name] = hex_to_bytes(value)
                 elif isinstance(value, str):
                     output_dict[name] = value.encode("utf-8")
                 else:
                     output_dict[name] = value
             else:
-                output_dict[name] = value
+                output_dict[name] = {
+                    k: hex_to_bytes(v) if is_hex(v) else v for k, v in value.items()
+                }
         return output_dict
 
     def _load_json(self):
