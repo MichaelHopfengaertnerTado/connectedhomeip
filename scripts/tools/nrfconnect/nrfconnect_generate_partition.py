@@ -99,7 +99,7 @@ class PartitionCreator:
         """
         output_dict = {}
         for entry in data:
-            if not isinstance(entry, dict):
+            if not isinstance(data[entry], dict):
                 log.debug("Processing entry '%s'", entry)
                 if isinstance(data[entry], str) and data[entry].startswith(HEX_PREFIX):
                     output_dict[entry] = codecs.decode(data[entry][len(HEX_PREFIX):], "hex")
@@ -108,7 +108,7 @@ class PartitionCreator:
                 else:
                     output_dict[entry] = data[entry]
             else:
-                output_dict[entry] = entry
+                output_dict[entry] = data[entry]
         return output_dict
 
     def _load_json(self):
