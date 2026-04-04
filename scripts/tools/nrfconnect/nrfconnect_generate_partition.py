@@ -98,17 +98,17 @@ class PartitionCreator:
         If "key_value" of data entry is a dictionary, algorithm appends it to the created dictionary.
         """
         output_dict = {}
-        for entry in data:
-            if not isinstance(data[entry], dict):
-                log.debug("Processing entry '%s'", entry)
-                if isinstance(data[entry], str) and data[entry].startswith(HEX_PREFIX):
-                    output_dict[entry] = codecs.decode(data[entry][len(HEX_PREFIX):], "hex")
-                elif isinstance(data[entry], str):
-                    output_dict[entry] = data[entry].encode("utf-8")
+        for name, value in data.items():
+            if not isinstance(value, dict):
+                log.debug("Processing entry '%s'", name)
+                if isinstance(value, str) and value.startswith(HEX_PREFIX):
+                    output_dict[name] = codecs.decode(value[len(HEX_PREFIX):], "hex")
+                elif isinstance(value, str):
+                    output_dict[name] = value.encode("utf-8")
                 else:
-                    output_dict[entry] = data[entry]
+                    output_dict[name] = value
             else:
-                output_dict[entry] = data[entry]
+                output_dict[name] = value
         return output_dict
 
     def _load_json(self):
